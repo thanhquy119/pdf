@@ -59,10 +59,9 @@ def convert_pdf_to_docx(pdf_bytes):
         return None
 
 # Thiết lập giao diện Streamlit
-st.set_page_config(page_title="PDF sang Word Converter", page_icon="📄")
+st.set_page_config(page_title="PDF", page_icon="📄")
 
 st.title("Chuyển đổi PDF sang Word")
-st.write("Ứng dụng này sử dụng Adobe PDF Services API để chuyển đổi tệp PDF sang định dạng Word (.docx)")
 
 uploaded_file = st.file_uploader("Chọn file PDF", type=["pdf"])
 
@@ -94,4 +93,4 @@ if uploaded_file is not None:
                 st.error("Có lỗi xảy ra trong quá trình chuyển đổi. Vui lòng thử lại.")
 
 st.markdown("---")
-st.write("Được xây dựng với Streamlit và Adobe PDF Services API")
+st.write("hihihehe")
