@@ -1,7 +1,6 @@
 # app.py
 import os
 import io
-import tempfile
 import logging
 from typing import List
 
@@ -9,20 +8,14 @@ import streamlit as st
 from PyPDF2 import PdfReader, PdfWriter
 from PIL import Image
 
-from adobe.pdfservices.operation.auth.service_principal_credentials import ServicePrincipalCredentials
-from adobe.pdfservices.operation.exception.exceptions import ServiceApiException, ServiceUsageException, SdkException
-from adobe.pdfservices.operation.io.stream_asset import StreamAsset
-from adobe.pdfservices.operation.pdf_services import PDFServices
-from adobe.pdfservices.operation.pdf_services_media_type import PDFServicesMediaType
-from adobe.pdfservices.operation.pdfjobs.jobs.export_pdf_job import ExportPDFJob
-from adobe.pdfservices.operation.pdfjobs.params.export_pdf.export_pdf_params import ExportPDFParams
-from adobe.pdfservices.operation.pdfjobs.params.export_pdf.export_pdf_target_format import ExportPDFTargetFormat
-from adobe.pdfservices.operation.pdfjobs.result.export_pdf_result import ExportPDFResult
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="PDF HEHE", page_icon="📄", layout="wide")
+
+# Read Adobe credentials from environment (prevent NameError)
+CLIENT_ID = os.getenv("ADOBE_CLIENT_ID")
+CLIENT_SECRET = os.getenv("ADOBE_CLIENT_SECRET")
 
 # ================= Utility functions =================
 def merge_pdfs(file_bytes_list: List[bytes]) -> bytes:
@@ -44,7 +37,6 @@ def images_to_pdf(images_bytes_list: List[bytes]) -> bytes:
     out = io.BytesIO()
     if not pil_images:
         raise ValueError("No images provided")
-    # save first image and append others
     pil_images[0].save(out, format="PDF", save_all=True, append_images=pil_images[1:])
     out.seek(0)
     return out.read()
@@ -71,10 +63,14 @@ def convert_pdf_to_docx_with_adobe(pdf_bytes: bytes):
     Requires ADOBE_CLIENT_ID and ADOBE_CLIENT_SECRET set in env variables.
     """
     if not CLIENT_ID or not CLIENT_SECRET:
-        st.error("Adobe credentials missing — không thể chuyển PDF→DOCX.")
+        # No credentials configured
+        logger.warning("Adobe credentials missing (ADOBE_CLIENT_ID / ADOBE_CLIENT_SECRET). Skipping conversion.")
+        st.error("Adobe credentials missing — không thể chuyển PDF→DOCX. \
+Thiết lập ADOBE_CLIENT_ID và ADOBE_CLIENT_SECRET trong biến môi trường.")
         return None
+
     try:
-        # The Adobe SDK usage here is illustrative. Adapt if your SDK version differs.
+        # Import Adobe SDK lazily to avoid import errors at app startup when sdk not installed
         from adobe.pdfservices.operation.auth.service_principal_credentials import ServicePrincipalCredentials
         from adobe.pdfservices.operation.pdf_services import PDFServices
         from adobe.pdfservices.operation.pdf_services_media_type import PDFServicesMediaType
@@ -84,10 +80,11 @@ def convert_pdf_to_docx_with_adobe(pdf_bytes: bytes):
         from adobe.pdfservices.operation.pdfjobs.result.export_pdf_result import ExportPDFResult
         from adobe.pdfservices.operation.io.stream_asset import StreamAsset
 
-        credentials = ServicePrincipalCredentials(client_id="702badd4a1634f9a914cba03aa36114d", client_secret="p8e-47C4dyLDI_FbPiR3GlNmwcy_qytGZaUW")
+        # Use credentials from environment
+        credentials = ServicePrincipalCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
         pdf_services = PDFServices(credentials=credentials)
 
-        # Upload input as stream
+        # Upload input - interface may differ between SDK versions; using best-effort calls
         input_asset = pdf_services.upload(input_stream=pdf_bytes, mime_type=PDFServicesMediaType.PDF)
 
         export_pdf_params = ExportPDFParams(target_format=ExportPDFTargetFormat.DOCX)
@@ -99,8 +96,13 @@ def convert_pdf_to_docx_with_adobe(pdf_bytes: bytes):
         result_asset = pdf_services_response.get_result().get_asset()
         stream_asset = pdf_services.get_content(result_asset)
 
-        # stream_asset is StreamAsset — get input stream bytes
-        return stream_asset.get_input_stream()
+        # stream_asset may offer get_input_stream() or similar; handle both bytes and stream
+        asset_stream = stream_asset.get_input_stream()
+        # asset_stream might be BytesIO-like or already bytes
+        if hasattr(asset_stream, "read"):
+            return asset_stream.read()
+        else:
+            return asset_stream
     except Exception as e:
         logger.exception("Lỗi khi gọi Adobe SDK")
         st.error(f"Chuyển PDF→DOCX lỗi: {e}")
@@ -108,7 +110,12 @@ def convert_pdf_to_docx_with_adobe(pdf_bytes: bytes):
 
 # ================= Streamlit UI =================
 st.sidebar.header("Chọn chức năng")
-mode = st.sidebar.selectbox("Chức năng", ["Merge PDFs", "Images → PDF", "Delete pages from PDF", "PDF → DOCX"])
+
+# Move "Images → PDF" to top in the selectbox
+mode = st.sidebar.selectbox(
+    "Chức năng",
+    ["Images → PDF", "Merge PDFs", "Delete pages from PDF", "PDF → DOCX"]
+)
 
 if mode == "Merge PDFs":
     uploaded = st.file_uploader("Chọn nhiều file PDF để gộp", type=["pdf"], accept_multiple_files=True)
@@ -185,7 +192,6 @@ elif mode == "PDF → DOCX":
                 docx_bytes = convert_pdf_to_docx_with_adobe(pdf_bytes)
                 if docx_bytes:
                     st.success("Chuyển thành công!")
-                    # docx_bytes might be stream-like (adjust if necessary)
                     st.download_button("Tải file DOCX", data=docx_bytes, file_name=out_name, mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
                 else:
                     st.error("Không thể chuyển đổi. Kiểm tra logs / thông tin Adobe credentials.")
