@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 st.set_page_config(page_title="PDF HEHE", page_icon="📄", layout="wide")
 
 # Read Adobe credentials from environment (prevent NameError)
-CLIENT_ID = os.getenv("702badd4a1634f1a914cba03aa36114d")
-CLIENT_SECRET = os.getenv("p8e-47C4dyLDI_FbPiR3GlNmwcy_qytGZaUW")
+CLIENT_ID = os.getenv("ADOBE_CLIENT_ID")
+CLIENT_SECRET = os.getenv("ADOBE_CLIENT_SECRET")
 
 # ================= Utility functions =================
 def merge_pdfs(file_bytes_list: List[bytes]) -> bytes:
@@ -81,7 +81,7 @@ Thiết lập ADOBE_CLIENT_ID và ADOBE_CLIENT_SECRET trong biến môi trườn
         from adobe.pdfservices.operation.io.stream_asset import StreamAsset
 
         # Use credentials from environment
-        credentials = ServicePrincipalCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+        credentials = ServicePrincipalCredentials(client_id="702badd4a1634f1a914cba03aa36114d", client_secret="p8e-47C4dyLDI_FbPiR3GlNmwcy_qytGZaUW")
         pdf_services = PDFServices(credentials=credentials)
 
         # Upload input - interface may differ between SDK versions; using best-effort calls
