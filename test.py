@@ -91,8 +91,8 @@ def get_adobe_access_token():
     token_url = "https://ims-na1.adobelogin.com/ims/token/v1"  # example Adobe IMS token URL
     data = {
         "grant_type": "client_credentials",
-        "client_id": ADOBE_CLIENT_ID,
-        "client_secret": ADOBE_CLIENT_SECRET,
+        "client_id": "702badd4a1634f1a914cba03aa36114d",
+        "client_secret": "p8e-47C4dyLDI_FbPiR3GlNmwcy_qytGZaUW",
         # "scope": "openid,AdobePDFServices_sdk"  # set scopes needed by your integration
     }
     try:
@@ -159,8 +159,7 @@ tabs = st.tabs(["Images → PDF", "Merge PDFs", "Compress PDF", "Delete Pages", 
 
 # --- Tab 0: Images -> PDF ---
 with tabs[0]:
-    st.header("Images → PDF")
-    uploaded_images = st.file_uploader("Upload images (png/jpg/jpeg/bmp/tiff/webp)", accept_multiple_files=True,
+    uploaded_images = st.file_uploader("Upload images)", accept_multiple_files=True,
                                        type=["png","jpg","jpeg","bmp","tiff","webp"])
     if uploaded_images:
         if st.button("Convert to PDF"):
@@ -175,8 +174,7 @@ with tabs[0]:
 
 # --- Tab 1: Merge PDFs ---
 with tabs[1]:
-    st.header("Merge multiple PDFs")
-    pdf_files = st.file_uploader("Upload PDFs to merge (order preserved)", accept_multiple_files=True, type=["pdf"])
+    pdf_files = st.file_uploader("Upload PDFs to merge", accept_multiple_files=True, type=["pdf"])
     if pdf_files:
         if st.button("Merge PDFs"):
             merged, errors = merge_pdfs_bytes(pdf_files)
@@ -190,7 +188,6 @@ with tabs[1]:
 
 # --- Tab 2: Compress PDF (Adobe) ---
 with tabs[2]:
-    st.header("Compress PDF (using Adobe API)")
     pdf_for_compress = st.file_uploader("Upload a PDF to compress", type=["pdf"])
     if pdf_for_compress:
         st.info("Compression uses Adobe API — ensure ADOBE_CLIENT_ID and ADOBE_CLIENT_SECRET are set in secrets.")
@@ -212,7 +209,7 @@ with tabs[2]:
 # --- Tab 3: Delete Pages ---
 with tabs[3]:
     st.header("Delete pages from PDF")
-    pdf_to_edit = st.file_uploader("Upload PDF to edit (delete pages)", type=["pdf"])
+    pdf_to_edit = st.file_uploader("Upload PDF to edit)", type=["pdf"])
     pages_text = st.text_input("Pages to delete (comma-separated, e.g. 1,3-5)", "")
     def parse_pages(text):
         pages = set()
@@ -248,10 +245,8 @@ with tabs[3]:
 
 # --- Tab 4: PDF -> Word (Adobe) ---
 with tabs[4]:
-    st.header("Convert PDF → Word (DOCX) using Adobe API")
-    pdf_to_convert = st.file_uploader("Upload PDF to convert to Word (DOCX)", type=["pdf"])
+    pdf_to_convert = st.file_uploader("Upload PDF to convert to Word", type=["pdf"])
     if pdf_to_convert:
-        st.info("Conversion uses Adobe API — ensure ADOBE_CLIENT_ID and ADOBE_CLIENT_SECRET are set in secrets.")
         if st.button("Convert to Word (Adobe)"):
             try:
                 pdf_to_convert.seek(0)
