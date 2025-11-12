@@ -1,1 +1,5 @@
 pdfservices-sdk
+PyPDF2
+Pillow
+pdfservices-sdk
+python-dotenv
