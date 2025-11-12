@@ -84,7 +84,7 @@ def convert_pdf_to_docx_with_adobe(pdf_bytes: bytes):
         from adobe.pdfservices.operation.pdfjobs.result.export_pdf_result import ExportPDFResult
         from adobe.pdfservices.operation.io.stream_asset import StreamAsset
 
-        credentials = ServicePrincipalCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+        credentials = ServicePrincipalCredentials(client_id="702badd4a1634f9a914cba03aa36114d", client_secret="p8e-47C4dyLDI_FbPiR3GlNmwcy_qytGZaUW")
         pdf_services = PDFServices(credentials=credentials)
 
         # Upload input as stream
