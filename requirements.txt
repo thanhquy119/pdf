@@ -1,5 +1,5 @@
-pdfservices-sdk
+streamlit
 PyPDF2
-Pillow
-pdfservices-sdk
-python-dotenv
+pillow
+requests
+python-docx
