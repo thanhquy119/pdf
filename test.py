@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 st.set_page_config(page_title="PDF HEHE", page_icon="📄", layout="wide")
 
 # Read Adobe credentials from environment (prevent NameError)
-CLIENT_ID = os.getenv("ADOBE_CLIENT_ID")
-CLIENT_SECRET = os.getenv("ADOBE_CLIENT_SECRET")
+CLIENT_ID = os.getenv("702badd4a1634f1a914cba03aa36114d")
+CLIENT_SECRET = os.getenv("p8e-47C4dyLDI_FbPiR3GlNmwcy_qytGZaUW")
 
 # ================= Utility functions =================
 def merge_pdfs(file_bytes_list: List[bytes]) -> bytes:
